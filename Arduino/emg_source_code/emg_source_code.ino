@@ -8,7 +8,7 @@
 #include <Arduino_JSON.h>
 #include <MegunoLink.h>
 #include <Filter.h>
-
+ 
 // Function prototypes
 void connectToWifi(void);
 void sendToAPI(float);
