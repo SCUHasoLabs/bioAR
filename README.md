@@ -1,4 +1,4 @@
 # bioAR
 
-This repository contains all the files associated with the BioAR project. Please put the files in the correct folders.
-When naming files follow this format: exampleFile
+Researching ways to combine the human body's biosignals with augmented reality technology.
+
