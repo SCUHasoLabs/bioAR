@@ -1,0 +1,24 @@
+{
+    "emg data": [
+        {
+            "id": 1,
+            "name": "...",
+            "classification": 0
+        },
+        {
+            "id": 2,
+            "name": "...",
+            "classification": 1
+        },
+        {
+            "id": 3,
+            "name": "...",
+            "classification": 1
+        },
+        {
+            "id": 4,
+            "name": "...",
+            "classification": 0
+        }
+    ]
+}
