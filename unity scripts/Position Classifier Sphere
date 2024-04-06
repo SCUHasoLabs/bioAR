@@ -1,0 +1,147 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+using SimpleJSON;
+using UnityEngine.Networking;
+
+public class PositionClassifier : MonoBehaviour
+{
+    public float scaleSpeed = 1f;
+
+
+// ** NEED TO SOMEHOW CHANGE HERE FOR API ACCESSING
+    //declaring struct that matches the db.json structure
+    [System.Serializable] //ensures that content is serialized (converted into something unity knows)
+    public class BaseData
+    {
+        //public int id;
+        //public string name;
+        public int classification;
+    }
+
+    public class ClassificationData
+    {
+        //public Vector3 position;
+        public int classification;
+    }
+
+    public List<ClassificationData> classy = new List<ClassificationData>();
+
+    // Start is called before the first frame update
+    private void Start()
+    {
+        StartCoroutine(LoadClassificationDataAPI("http://146.190.38.131:8000/"));
+        MapPositionToClassification(transform.position);
+    }
+
+    //API
+    private IEnumerator LoadClassificationDataAPI(string uri){
+        using (UnityWebRequest webResult = UnityWebRequest.Get(uri)){
+            //requests and waits for page
+            yield return webResult.SendWebRequest();
+            Debug.Log("yay got API access: " + uri);
+
+
+            if (webResult.result == UnityWebRequest.Result.Success){
+                //DEBUG HERE !!!!, check on formatting
+                Debug.Log("yay inside success case result");
+                string json = webResult.downloadHandler.text;
+                Debug.Log(json);
+                //classy.Clear();
+                JSONNode rootNode = JSON.Parse(json);
+
+                Debug.Log("nice! starting if statement");
+
+                if (rootNode.IsObject) //**CHECK HERE
+                {
+                    Debug.Log("checking if statement");
+                    JSONNode emgDataArray = rootNode["BaseData"];
+
+                    classy.Clear();
+
+                    foreach (JSONNode node in emgDataArray)
+                        {
+                            BaseData data = new BaseData
+                            {
+                                //id = node["id"].AsInt,
+                                //name = node["name"].Value,
+                                classification = node["classification"].AsInt
+                            };
+
+                            Debug.Log("printing emg data");
+                            //Debug.Log(data.id);
+                            //Debug.Log(data.name);
+                            Debug.Log(data.classification);
+
+                            ClassificationData classData = new ClassificationData
+                            {
+                                //position = Vector3.zero,
+                                classification = data.classification
+                            };
+
+                            Debug.Log("printing classData data");
+                            //Debug.Log(classData.position);
+                            Debug.Log(classData.classification);
+
+                            classy.Add(classData);
+                        }
+                    
+                    MapPositionToClassification(transform.position);
+                } else
+                {
+                    Debug.LogError("awww Invalid JSON format from API.");
+                }
+                //MapPositionToClassification(transform.position);
+                //break;
+            } else {
+                Debug.LogError(" :( Error fetching data from API: " + webResult.error);
+            }
+        }
+    }
+
+    private IEnumerator MapPositionToClassification(Vector3 position)
+    {
+
+        if (classy == null)
+        {
+            Debug.LogWarning("classy is null. Make sure to load data before calling MapPositionToClassification.");
+            yield return null;
+        }
+
+        foreach (var data in classy)
+        {
+            Debug.Log("entered for loop for data in classy yay");
+            
+            Debug.Log("entered if statement, continuing with changes yay");
+            Debug.Log("Classification: " + data.classification);
+            
+            Debug.Log("waiting for delay");
+            yield return new WaitForSeconds(3);
+            Debug.Log("starting scaling now");
+
+            if (data.classification == 1){
+                //code to rescale sphere to be bigger
+                GameObject sphere = GameObject.Find("Sphere");
+                sphere.transform.localScale += new Vector3(1.1f, 1.1f, 1.1f) * scaleSpeed * Time.deltaTime;
+                Debug.Log("scale increased yay");
+
+            } else {
+                GameObject sphere = GameObject.Find("Sphere");
+                sphere.transform.localScale -= new Vector3(0.5f, 0.5f, 0.5f) * scaleSpeed * Time.deltaTime;
+                Debug.Log("scale decreased yay");
+                
+            }
+            
+        }
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        if (classy != null)
+        {
+            StartCoroutine(MapPositionToClassification(transform.position));
+        }  
+    }
+}
